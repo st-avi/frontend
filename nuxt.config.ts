@@ -5,5 +5,6 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   vite: {
     plugins: [ tailwindcss() ],
-  }
+  },
+  modules: ["@tdesign-vue-next/nuxt"]
 })
