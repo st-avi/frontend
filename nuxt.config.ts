@@ -1,10 +1,10 @@
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
   vite: {
-    plugins: [ tailwindcss() ],
+    plugins: [tailwindcss()],
   },
-  modules: ["@tdesign-vue-next/nuxt"]
+  modules: ['@tdesign-vue-next/nuxt', '@nuxt/eslint'],
 })
