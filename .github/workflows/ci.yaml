@@ -8,11 +8,10 @@ permissions:
   contents: read
 
 env:
-  PNPM_VERSION: 10.11.0
   NODE_VERSION: 24
 
 jobs:
-  cache-and-install:
+  check:
     runs-on: [ self-hosted, Linux, X64, stavi-dev ]
     steps:
       - uses: actions/checkout@v5
@@ -20,7 +19,6 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Install Node.js
