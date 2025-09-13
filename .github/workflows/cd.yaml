@@ -1,0 +1,83 @@
+name: cd
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PNPM_VERSION: 10.11.0
+  NODE_VERSION: 24
+
+jobs:
+  call-workflow-ci:
+    uses: ./.github/workflows/ci.yaml
+
+  deploy:
+    needs: call-workflow-ci
+    runs-on: [ self-hosted, Linux, X64, stavi-dev ]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          platforms: linux/amd64
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: frontend
+          platforms: linux/amd64
+
+      - name: Save Docker Image
+        run: |
+          docker save frontend -o ./frontend.tar
+
+      - name: Upload image to Server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          source: "./frontend.tar"
+          target: ${{ secrets.TARGET_PATH }}
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: |
+            cd ${{ secrets.TARGET_PATH }}
+            [[ -f compose.yaml ]] && docker compose down
+            docker system prune -f
+            docker rmi frontend || true
+            docker load -i ./frontend.tar
+            docker compose up -d
