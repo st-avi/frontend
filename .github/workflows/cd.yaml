@@ -13,7 +13,7 @@ jobs:
 
   deploy:
     needs: call-workflow-ci
-    runs-on: [ self-hosted, Linux, X64, stavi-dev ]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
