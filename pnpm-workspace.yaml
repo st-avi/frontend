@@ -1,5 +1,9 @@
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'
-  - 'esbuild'
-  - 'unrs-resolver'
+  - esbuild
+  - unrs-resolver
+  - vue-demi
+
+overrides:
+  vite: npm:rolldown-vite@latest
