@@ -8,5 +8,5 @@ export default defineNuxtConfig({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     plugins: [tailwindcss() as any],
   },
-  modules: ['@tdesign-vue-next/nuxt', '@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@nuxt/ui'],
 })
