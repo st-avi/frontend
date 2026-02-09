@@ -54,6 +54,15 @@ const menuItems = computed<NavigationMenuItem[]>(() => [
       </NuxtLayout>
     </UMain>
 
-    <UFooter />
+    <UFooter class="border-default border-t">
+      <template #left>
+        <p class="text-muted text-sm">Copyright &copy; {{ new Date().getFullYear() }} Stavi. 保留一切權利。</p>
+      </template>
+      <template #right>
+        <div class="flex">
+          <ULink class="text-sm">使用條款</ULink>
+        </div>
+      </template>
+    </UFooter>
   </UApp>
 </template>
