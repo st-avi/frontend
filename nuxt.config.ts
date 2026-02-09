@@ -9,4 +9,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss() as any],
   },
   modules: ['@nuxt/eslint', '@nuxt/ui'],
+  icon: {
+    serverBundle: 'remote',
+  },
 })
