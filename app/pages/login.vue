@@ -7,8 +7,8 @@ definePageMeta({
 })
 
 const schema = z.object({
-  email: z.string().email('請輸入有效的信箱'),
-  password: z.string().min(1, '請輸入密碼').min(8, '密碼至少需要 8 個字元'),
+  email: z.string().email('請輸入有效的電子郵件地址'),
+  password: z.string().min(1, '請輸入密碼').min(12, '密碼至少需要 12 個字元'),
 })
 
 type Schema = z.output<typeof schema>
@@ -17,16 +17,14 @@ const fields: AuthFormField[] = [
   {
     name: 'email',
     type: 'email',
-    label: '信箱',
-    placeholder: '請輸入您的信箱',
-    required: true,
+    label: '電子郵件地址',
+    placeholder: '請輸入您的電子郵件地址',
   },
   {
     name: 'password',
     type: 'password',
     label: '密碼',
     placeholder: '請輸入您的密碼',
-    required: true,
   },
 ]
 
@@ -53,7 +51,7 @@ const handleSubmit = (payload: FormSubmitEvent<Schema>) => {
     <UAuthForm
       :schema="schema"
       title="登入"
-      description="輸入您的帳號憑證以存取您的帳戶。"
+      description="輸入您的電子郵件地址和密碼以登入您的帳戶。"
       icon="i-lucide-user"
       :fields="fields"
       :providers="providers"
