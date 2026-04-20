@@ -12,4 +12,9 @@ export default defineNuxtConfig({
   icon: {
     serverBundle: 'remote',
   },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE,
+    },
+  },
 })
