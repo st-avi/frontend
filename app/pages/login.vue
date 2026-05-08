@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import * as z from 'zod'
-import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
+import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
 import type { ApiResp } from '~~/types/api/common'
 import type { LoginData } from '~~/types/api/auth'
 
 definePageMeta({
   layout: 'minimal',
+  middleware: ['guest'],
 })
 
 const config = useRuntimeConfig()
@@ -56,13 +57,10 @@ const handleSubmit = async (payload: FormSubmitEvent<Schema>) => {
       },
     })
     if (resp.code === 0 && resp.message === 'OK') {
-      const toastComp = toast.add({
-        title: '登入成功',
-        description: '正在為您跳轉...',
-        color: 'success',
-      })
-      await navigateTo('/')
-      toast.remove(toastComp.id)
+      const fetched = useState<boolean>('auth-user-fetched', () => false)
+      fetched.value = false
+      await useAuthUser()
+      await navigateTo('/', { replace: true })
       return
     }
     toast.add({
