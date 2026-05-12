@@ -35,7 +35,7 @@ export default defineNuxtPlugin(() => {
   const refresh = async (): Promise<void> => {
     if (!refreshPromise) {
       refreshPromise = $fetch(
-        '/auth/refresh',
+        '/refresh',
         withSSRHeaders({
           baseURL: config.public.apiBase,
           method: 'POST',
@@ -55,7 +55,7 @@ export default defineNuxtPlugin(() => {
   }
 
   const api: ApiFetch = async <T>(url: string, options: FetchOptions<'json'> = {}): Promise<T> => {
-    const isRefreshEndpoint = url === '/auth/refresh'
+    const isRefreshEndpoint = url === '/refresh'
     const { _retried, ...cleanOptions } = options as RetryableOptions
     const mergedOptions: FetchOptions<'json'> = withSSRHeaders({
       baseURL: config.public.apiBase,
