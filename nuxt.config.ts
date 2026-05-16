@@ -2,6 +2,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  devServer: {
+    host: 'local.stavi.tw',
+    https: true,
+  },
   typescript: { typeCheck: true },
   css: ['~/assets/css/main.css'],
   vite: {
