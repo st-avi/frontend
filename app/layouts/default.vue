@@ -9,7 +9,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <div>
+  <div class="flex min-h-screen flex-col">
     <UHeader>
       <template #title>
         <img src="/logo2.webp" class="h-12" alt="Logo" aria-label="Logo" />
@@ -48,7 +48,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => [
       </template>
     </UHeader>
 
-    <UMain>
+    <UMain class="min-h-0 flex-1">
       <slot />
     </UMain>
 
