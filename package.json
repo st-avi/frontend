@@ -9,35 +9,35 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "prepare": "husky"
   },
   "lint-staged": {
     "*.{ts,js,vue}": [
-      "pnpm lint:fix"
+      "pnpm lint --fix"
     ]
   },
   "dependencies": {
     "@nuxt/eslint": "1.15.2",
-    "@nuxt/ui": "^4.6.1",
-    "@tailwindcss/vite": "^4.2.2",
-    "eslint": "^10.2.0",
-    "nuxt": "^4.4.2",
-    "tailwindcss": "^4.2.2",
-    "vue": "^3.5.32",
-    "vue-router": "^5.0.4",
-    "zod": "^4.3.6"
+    "@nuxt/ui": "^4.8.1",
+    "@tailwindcss/vite": "^4.3.0",
+    "eslint": "^10.4.0",
+    "nuxt": "^4.4.6",
+    "tailwindcss": "^4.3.0",
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-prettier": "^5.5.6",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.8.2",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "typescript": "^6.0.2",
-    "vue-tsc": "^3.2.6"
+    "lint-staged": "^17.0.5",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14",
+    "vue-tsc": "^3.3.2"
   },
-  "packageManager": "pnpm@10.28.1"
+  "packageManager": "pnpm@11.4.0"
 }

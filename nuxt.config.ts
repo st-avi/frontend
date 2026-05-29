@@ -11,6 +11,9 @@ export default defineNuxtConfig({
   vite: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     plugins: [tailwindcss() as any],
+    optimizeDeps: {
+      include: ['zod', 'zod/locales'],
+    },
   },
   modules: ['@nuxt/eslint', '@nuxt/ui'],
   icon: {
