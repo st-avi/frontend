@@ -17,9 +17,10 @@ import {
   CAT_INITIAL_VY,
   CAT_BOUNCE_DAMPING,
   CAT_MIN_SPEED,
+  FORBIDDEN_REDIRECT_DELAY_MS,
 } from '~/config/error-page'
 
-defineProps({
+const props = defineProps({
   error: {
     type: Object as () => NuxtError,
     default: null,
@@ -27,6 +28,27 @@ defineProps({
 })
 
 const handleGoHome = () => clearError({ redirect: '/' })
+
+const toast = useToast()
+let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
+
+onMounted(() => {
+  if (props.error?.status !== 403) return
+
+  toast.add({
+    title: '沒有權限訪問此頁面',
+    description: '5 秒後為您導回首頁',
+    color: 'error',
+  })
+
+  forbiddenRedirectTimer = setTimeout(() => {
+    handleGoHome()
+  }, FORBIDDEN_REDIRECT_DELAY_MS)
+})
+
+onUnmounted(() => {
+  if (forbiddenRedirectTimer) clearTimeout(forbiddenRedirectTimer)
+})
 
 const { width, height } = useWindowSize()
 const CAT_SIZE = computed(() => (width.value <= BREAKPOINT_MOBILE ? CAT_SIZE_MOBILE : CAT_SIZE_DESKTOP))
@@ -183,7 +205,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <UApp>
+  <UApp :toaster="{ position: 'top-center' }">
     <div class="relative h-screen w-screen overflow-hidden">
       <img src="~/assets/image/404_bg.webp" alt="404 background" class="absolute inset-0 h-full w-full object-cover" />
       <div class="relative z-10 flex h-full w-full items-center justify-center px-6">
@@ -195,6 +217,15 @@ onUnmounted(() => {
             <div class="flex flex-col items-center justify-center gap-6 max-sm:gap-3">
               <p class="text-muted text-center text-base leading-relaxed max-sm:text-sm">
                 您要找的頁面可能已經被移除或暫時無法使用。
+              </p>
+              <UButton color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
+            </div>
+          </template>
+          <template v-else-if="error?.status === 403">
+            <h1 class="text-highlighted mb-4 text-center text-[3.375rem] font-bold max-sm:text-4xl">403 禁止訪問</h1>
+            <div class="flex flex-col items-center justify-center gap-6 max-sm:gap-3">
+              <p class="text-muted text-center text-base leading-relaxed max-sm:text-sm">
+                您沒有權限訪問此頁面，即將為您導回首頁。
               </p>
               <UButton color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
             </div>
