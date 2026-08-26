@@ -11,6 +11,13 @@ definePageMeta({
 
 const config = useRuntimeConfig()
 const toast = useToast()
+const route = useRoute()
+
+const getRedirectTarget = () => {
+  const redirect = route.query.redirect
+  if (typeof redirect !== 'string' || !redirect.startsWith('/') || redirect.startsWith('//')) return '/'
+  return redirect
+}
 
 const schema = z.object({
   email: z.email('請輸入有效的電子郵件地址'),
@@ -44,6 +51,7 @@ const handleSubmit = async (payload: FormSubmitEvent<Schema>) => {
   const { email, password, otp } = payload.data
   const otpStr = otp.join('')
   isSubmitting.value = true
+  let loginSucceeded = false
 
   try {
     const resp = await $fetch<ApiResp<LoginData>>('/login', {
@@ -60,14 +68,14 @@ const handleSubmit = async (payload: FormSubmitEvent<Schema>) => {
       const fetched = useState<boolean>('auth-user-fetched', () => false)
       fetched.value = false
       await useAuthUser()
-      await navigateTo('/', { replace: true })
-      return
+      loginSucceeded = true
+    } else {
+      toast.add({
+        title: '登入失敗',
+        description: '請稍後再試',
+        color: 'error',
+      })
     }
-    toast.add({
-      title: '登入失敗',
-      description: '請稍後再試',
-      color: 'error',
-    })
   } catch (error) {
     const status =
       typeof error === 'object' &&
@@ -92,6 +100,10 @@ const handleSubmit = async (payload: FormSubmitEvent<Schema>) => {
     }
   } finally {
     isSubmitting.value = false
+  }
+
+  if (loginSucceeded) {
+    await navigateTo(getRedirectTarget(), { replace: true })
   }
 }
 </script>
