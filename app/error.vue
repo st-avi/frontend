@@ -29,7 +29,7 @@ defineProps({
 const handleGoHome = () => clearError({ redirect: '/' })
 
 const { width, height } = useWindowSize()
-const CAT_SIZE = computed(() => (width.value <= BREAKPOINT_MOBILE ? CAT_SIZE_MOBILE : CAT_SIZE_DESKTOP))
+const catSize = computed(() => (width.value <= BREAKPOINT_MOBILE ? CAT_SIZE_MOBILE : CAT_SIZE_DESKTOP))
 
 const x = ref(CAT_INITIAL_X)
 const y = ref(CAT_INITIAL_Y)
@@ -42,8 +42,8 @@ type PositionSample = { x: number; y: number; t: number }
 const samples: PositionSample[] = []
 
 const catStyle = computed(() => ({
-  width: `${CAT_SIZE.value}px`,
-  height: `${CAT_SIZE.value}px`,
+  width: `${catSize.value}px`,
+  height: `${catSize.value}px`,
   transform: `translate(${x.value}px, ${y.value}px) rotate(${rotation.value}deg)`,
   top: '0',
   left: '0',
@@ -67,8 +67,8 @@ useRafFn(({ delta }) => {
 
   const frames = Math.min(delta, CAT_MAX_FRAME_DELTA_MS) / CAT_MS_PER_FRAME
 
-  const maxX = width.value - CAT_SIZE.value
-  const maxY = height.value - CAT_SIZE.value
+  const maxX = width.value - catSize.value
+  const maxY = height.value - catSize.value
 
   x.value += vx.value * frames
   y.value += vy.value * frames
@@ -120,8 +120,8 @@ let dragOffsetY = 0
 
 const handleDragMove = (clientX: number, clientY: number) => {
   recordSample(clientX, clientY)
-  x.value = clamp(clientX - dragOffsetX, 0, width.value - CAT_SIZE.value)
-  y.value = clamp(clientY - dragOffsetY, 0, height.value - CAT_SIZE.value)
+  x.value = clamp(clientX - dragOffsetX, 0, width.value - catSize.value)
+  y.value = clamp(clientY - dragOffsetY, 0, height.value - catSize.value)
   rotation.value += CAT_DRAG_ROTATION_SPEED
 }
 
