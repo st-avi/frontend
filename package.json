@@ -20,6 +20,7 @@
     "@nuxt/eslint": "1.15.2",
     "@nuxt/ui": "^4.8.1",
     "@tailwindcss/vite": "^4.3.0",
+    "@vueuse/core": "^14.3.0",
     "eslint": "^10.4.0",
     "nuxt": "^4.4.6",
     "tailwindcss": "^4.3.0",
