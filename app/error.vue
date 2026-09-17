@@ -1,118 +1,105 @@
 <script setup lang="ts">
-import { useRafFn, useWindowSize } from '@vueuse/core'
+import { useEventListener, useRafFn, useWindowSize } from '@vueuse/core'
 import type { NuxtError } from '#app'
-import {
-  BREAKPOINT_MOBILE,
-  CAT_SIZE_MOBILE,
-  CAT_SIZE_DESKTOP,
-  CAT_ROTATION_SPEED,
-  CAT_DRAG_ROTATION_SPEED,
-  CAT_MAX_THROW_SPEED,
-  CAT_MAX_FRAME_DELTA_MS,
-  CAT_MS_PER_FRAME,
-  CAT_VELOCITY_SAMPLES,
-  CAT_INITIAL_X,
-  CAT_INITIAL_Y,
-  CAT_INITIAL_VX,
-  CAT_INITIAL_VY,
-  CAT_BOUNCE_DAMPING,
-  CAT_MIN_SPEED,
-  FORBIDDEN_REDIRECT_DELAY_MS,
-} from '~/config/error-page'
 
-const props = defineProps({
-  error: {
-    type: Object as () => NuxtError,
-    default: null,
-  },
-})
+const props = defineProps<{
+  error: NuxtError | null
+}>()
 
+type Vector2 = { x: number; y: number }
+
+const is404 = computed(() => props.error?.status === 404)
+const is403 = computed(() => props.error?.status === 403)
 const handleGoHome = () => clearError({ redirect: '/' })
-
 const toast = useToast()
-let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
-
-onMounted(() => {
-  if (props.error?.status !== 403) return
-
-  toast.add({
-    title: '沒有權限訪問此頁面',
-    description: '5 秒後為您導回首頁',
-    color: 'error',
-  })
-
-  forbiddenRedirectTimer = setTimeout(() => {
-    handleGoHome()
-  }, FORBIDDEN_REDIRECT_DELAY_MS)
-})
-
-onUnmounted(() => {
-  if (forbiddenRedirectTimer) clearTimeout(forbiddenRedirectTimer)
-})
-
 const { width, height } = useWindowSize()
-const CAT_SIZE = computed(() => (width.value <= BREAKPOINT_MOBILE ? CAT_SIZE_MOBILE : CAT_SIZE_DESKTOP))
 
-const x = ref(CAT_INITIAL_X)
-const y = ref(CAT_INITIAL_Y)
-const vx = ref(CAT_INITIAL_VX)
-const vy = ref(CAT_INITIAL_VY)
+// 403 forbidden page constants
+
+const FORBIDDEN_REDIRECT_DELAY_MS = 5000
+
+// 404 page cat animation constants
+
+const catSize = computed(() => (width.value <= 640 ? 90 : 140))
+// Speeds below are tuned per animation frame at TARGET_FPS.
+// The raf loop scales them by elapsed time so movement stays consistent across refresh rates.
+const CAT_MS_PER_FRAME = 1000 / 60 // MS_PER_SECOND / TARGET_FPS
+
+const CAT_ROTATION_SPEED = 0.4
+const CAT_DRAG_ROTATION_SPEED = 2.5
+const CAT_MAX_THROW_SPEED = 20
+const CAT_VELOCITY_SAMPLES = 5
+// Caps the per-tick delta so resuming a backgrounder tab doesn't teleport the cat.
+const CAT_MAX_FRAME_DELTA_MS = 100
+const CAT_INITIAL_X = 200
+const CAT_INITIAL_Y = 200
+const CAT_INITIAL_VX = 1.5
+const CAT_INITIAL_VY = 1.05
+// Fraction of speed kept after each wall bounce (energy loss on collision).
+const CAT_BOUNCE_DAMPING = 0.92
+// Speed never decays below the page's initial speed (minimum velocity threshold), no matter how many bounces happen.
+const CAT_MIN_SPEED = Math.hypot(CAT_INITIAL_VX, CAT_INITIAL_VY)
+
+const position = reactive<Vector2>({ x: CAT_INITIAL_X, y: CAT_INITIAL_Y })
+const velocity = reactive<Vector2>({ x: CAT_INITIAL_VX, y: CAT_INITIAL_VY })
 const rotation = ref(0)
 const isDragging = ref(false)
 
-type PositionSample = { x: number; y: number; t: number }
+type PositionSample = Vector2 & { t: number }
 const samples: PositionSample[] = []
 
 const catStyle = computed(() => ({
-  width: `${CAT_SIZE.value}px`,
-  height: `${CAT_SIZE.value}px`,
-  transform: `translate(${x.value}px, ${y.value}px) rotate(${rotation.value}deg)`,
+  width: `${catSize.value}px`,
+  height: `${catSize.value}px`,
+  transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation.value}deg)`,
   top: '0',
   left: '0',
   cursor: isDragging.value ? 'grabbing' : 'grab',
 }))
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+const getBounds = () => ({
+  x: Math.max(width.value - catSize.value, 0),
+  y: Math.max(height.value - catSize.value, 0),
+})
 
 const applyBounceDamping = () => {
-  const speed = Math.hypot(vx.value, vy.value)
+  const speed = Math.hypot(velocity.x, velocity.y)
   if (speed === 0) return
 
   const dampedSpeed = Math.max(speed * CAT_BOUNCE_DAMPING, CAT_MIN_SPEED)
   const scale = dampedSpeed / speed
-  vx.value *= scale
-  vy.value *= scale
+  velocity.x *= scale
+  velocity.y *= scale
 }
 
 useRafFn(({ delta }) => {
-  if (isDragging.value) return
+  if (!is404.value || isDragging.value) return
 
   const frames = Math.min(delta, CAT_MAX_FRAME_DELTA_MS) / CAT_MS_PER_FRAME
+  const bounds = getBounds()
 
-  const maxX = width.value - CAT_SIZE.value
-  const maxY = height.value - CAT_SIZE.value
-
-  x.value += vx.value * frames
-  y.value += vy.value * frames
+  position.x += velocity.x * frames
+  position.y += velocity.y * frames
   rotation.value += CAT_ROTATION_SPEED * frames
 
-  if (x.value <= 0) {
-    x.value = 0
-    vx.value = Math.abs(vx.value)
+  if (position.x <= 0) {
+    position.x = 0
+    velocity.x = Math.abs(velocity.x)
     applyBounceDamping()
-  } else if (x.value >= maxX) {
-    x.value = maxX
-    vx.value = -Math.abs(vx.value)
+  } else if (position.x >= bounds.x) {
+    position.x = bounds.x
+    velocity.x = -Math.abs(velocity.x)
     applyBounceDamping()
   }
 
-  if (y.value <= 0) {
-    y.value = 0
-    vy.value = Math.abs(vy.value)
+  if (position.y <= 0) {
+    position.y = 0
+    velocity.y = Math.abs(velocity.y)
     applyBounceDamping()
-  } else if (y.value >= maxY) {
-    y.value = maxY
-    vy.value = -Math.abs(vy.value)
+  } else if (position.y >= bounds.y) {
+    position.y = bounds.y
+    velocity.y = -Math.abs(velocity.y)
     applyBounceDamping()
   }
 })
@@ -123,27 +110,34 @@ const recordSample = (clientX: number, clientY: number) => {
 }
 
 const computeThrowVelocity = () => {
-  if (samples.length < 2) return { vx: 1.5, vy: 1.05 }
+  if (samples.length < 2) return { x: CAT_INITIAL_VX, y: CAT_INITIAL_VY }
 
   const first = samples[0]!
   const last = samples[samples.length - 1]!
-  const dt = (last.t - first.t) / 16 // normalize to ~60fps frames
+  const dt = (last.t - first.t) / CAT_MS_PER_FRAME // normalize to ~60fps frames
 
-  if (dt === 0) return { vx: 0, vy: 0 }
+  if (dt === 0) return { x: 0, y: 0 }
 
   return {
-    vx: clamp((last.x - first.x) / dt, -CAT_MAX_THROW_SPEED, CAT_MAX_THROW_SPEED),
-    vy: clamp((last.y - first.y) / dt, -CAT_MAX_THROW_SPEED, CAT_MAX_THROW_SPEED),
+    x: clamp((last.x - first.x) / dt, -CAT_MAX_THROW_SPEED, CAT_MAX_THROW_SPEED),
+    y: clamp((last.y - first.y) / dt, -CAT_MAX_THROW_SPEED, CAT_MAX_THROW_SPEED),
   }
 }
 
-let dragOffsetX = 0
-let dragOffsetY = 0
+const dragOffset = reactive<Vector2>({ x: 0, y: 0 })
+let stopDragListeners: (() => void) | null = null
+
+const clearDragListeners = () => {
+  stopDragListeners?.()
+  stopDragListeners = null
+}
 
 const handleDragMove = (clientX: number, clientY: number) => {
+  const bounds = getBounds()
+
   recordSample(clientX, clientY)
-  x.value = clamp(clientX - dragOffsetX, 0, width.value - CAT_SIZE.value)
-  y.value = clamp(clientY - dragOffsetY, 0, height.value - CAT_SIZE.value)
+  position.x = clamp(clientX - dragOffset.x, 0, bounds.x)
+  position.y = clamp(clientY - dragOffset.y, 0, bounds.y)
   rotation.value += CAT_DRAG_ROTATION_SPEED
 }
 
@@ -151,14 +145,11 @@ const handleDragEnd = () => {
   isDragging.value = false
 
   const thrown = computeThrowVelocity()
-  vx.value = thrown.vx
-  vy.value = thrown.vy
+  velocity.x = thrown.x
+  velocity.y = thrown.y
   samples.length = 0
 
-  window.removeEventListener('mousemove', onMouseMove)
-  window.removeEventListener('mouseup', onMouseUp)
-  window.removeEventListener('touchmove', onTouchMove)
-  window.removeEventListener('touchend', onTouchEnd)
+  clearDragListeners()
 }
 
 const onMouseMove = (e: MouseEvent) => handleDragMove(e.clientX, e.clientY)
@@ -171,15 +162,34 @@ const onTouchMove = (e: TouchEvent) => {
 }
 const onTouchEnd = () => handleDragEnd()
 
+const registerMouseDragListeners = () => {
+  clearDragListeners()
+  const stopMouseMove = useEventListener(window, 'mousemove', onMouseMove)
+  const stopMouseUp = useEventListener(window, 'mouseup', onMouseUp)
+  stopDragListeners = () => {
+    stopMouseMove()
+    stopMouseUp()
+  }
+}
+
+const registerTouchDragListeners = () => {
+  clearDragListeners()
+  const stopTouchMove = useEventListener(window, 'touchmove', onTouchMove, { passive: false })
+  const stopTouchEnd = useEventListener(window, 'touchend', onTouchEnd)
+  stopDragListeners = () => {
+    stopTouchMove()
+    stopTouchEnd()
+  }
+}
+
 const handleDragStart = (e: MouseEvent) => {
   isDragging.value = true
-  dragOffsetX = e.clientX - x.value
-  dragOffsetY = e.clientY - y.value
+  dragOffset.x = e.clientX - position.x
+  dragOffset.y = e.clientY - position.y
   samples.length = 0
   recordSample(e.clientX, e.clientY)
 
-  window.addEventListener('mousemove', onMouseMove)
-  window.addEventListener('mouseup', onMouseUp)
+  registerMouseDragListeners()
 }
 
 const handleTouchStart = (e: TouchEvent) => {
@@ -187,20 +197,32 @@ const handleTouchStart = (e: TouchEvent) => {
   if (!touch) return
 
   isDragging.value = true
-  dragOffsetX = touch.clientX - x.value
-  dragOffsetY = touch.clientY - y.value
+  dragOffset.x = touch.clientX - position.x
+  dragOffset.y = touch.clientY - position.y
   samples.length = 0
   recordSample(touch.clientX, touch.clientY)
 
-  window.addEventListener('touchmove', onTouchMove, { passive: false })
-  window.addEventListener('touchend', onTouchEnd)
+  registerTouchDragListeners()
 }
 
+let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
+
+onMounted(() => {
+  if (props.error?.status !== 403) return
+
+  toast.add({
+    title: '沒有權限訪問此頁面',
+    description: '5 秒後為您導回首頁',
+    color: 'error',
+  })
+  forbiddenRedirectTimer = setTimeout(() => {
+    handleGoHome()
+  }, FORBIDDEN_REDIRECT_DELAY_MS)
+})
+
 onUnmounted(() => {
-  window.removeEventListener('mousemove', onMouseMove)
-  window.removeEventListener('mouseup', onMouseUp)
-  window.removeEventListener('touchmove', onTouchMove)
-  window.removeEventListener('touchend', onTouchEnd)
+  clearDragListeners()
+  if (forbiddenRedirectTimer) clearTimeout(forbiddenRedirectTimer)
 })
 </script>
 
@@ -212,16 +234,16 @@ onUnmounted(() => {
         <div
           class="bg-default/70 ring-default max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl px-6 py-10 shadow-xl ring-1 backdrop-blur-sm"
         >
-          <template v-if="error?.status === 404">
+          <template v-if="is404">
             <h1 class="text-highlighted mb-4 text-center text-[3.375rem] font-bold max-sm:text-4xl">404 找不到頁面</h1>
             <div class="flex flex-col items-center justify-center gap-6 max-sm:gap-3">
               <p class="text-muted text-center text-base leading-relaxed max-sm:text-sm">
                 您要找的頁面可能已經被移除或暫時無法使用。
               </p>
-              <UButton color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
+              <UButton size="xl" color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
             </div>
           </template>
-          <template v-else-if="error?.status === 403">
+          <template v-else-if="is403">
             <h1 class="text-highlighted mb-4 text-center text-[3.375rem] font-bold max-sm:text-4xl">403 禁止訪問</h1>
             <div class="flex flex-col items-center justify-center gap-6 max-sm:gap-3">
               <p class="text-muted text-center text-base leading-relaxed max-sm:text-sm">
@@ -234,15 +256,16 @@ onUnmounted(() => {
             <div class="flex flex-col items-center justify-center gap-4">
               <h1 class="text-error text-6xl font-bold">{{ error?.status }}</h1>
               <p class="text-muted text-center text-lg">{{ error?.message }}</p>
-              <UButton color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
+              <UButton size="xl" color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
             </div>
           </template>
         </div>
       </div>
       <img
-        v-if="error?.status === 404"
+        v-if="is404"
         src="~/assets/image/404_cat.webp"
-        alt="floating cat"
+        alt=""
+        aria-hidden="true"
         draggable="false"
         class="fixed z-20 select-none"
         :style="catStyle"
