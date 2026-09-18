@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import * as z from 'zod'
+import { hasProtocol } from 'ufo'
 import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
 import type { ApiResp } from '~~/types/api/common'
 import type { LoginData } from '~~/types/api/auth'
@@ -13,10 +14,13 @@ const config = useRuntimeConfig()
 const toast = useToast()
 const route = useRoute()
 
+const isRootRelativePath = (path: string) => path.startsWith('/')
+const isSameOrigin = (path: string) => !hasProtocol(path, { acceptRelative: true })
+const isSafeRedirectPath = (path: string) => isRootRelativePath(path) && isSameOrigin(path)
+
 const getRedirectTarget = () => {
   const redirect = route.query.redirect
-  if (typeof redirect !== 'string' || !redirect.startsWith('/') || redirect.startsWith('//')) return '/'
-  return redirect
+  return typeof redirect === 'string' && isSafeRedirectPath(redirect) ? redirect : '/'
 }
 
 const schema = z.object({
