@@ -208,7 +208,7 @@ const handleTouchStart = (e: TouchEvent) => {
 let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
-  if (props.error?.status !== 403) return
+  if (!is403.value) return
 
   toast.add({
     title: '沒有權限訪問此頁面',
