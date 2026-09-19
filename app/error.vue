@@ -208,16 +208,16 @@ const handleTouchStart = (e: TouchEvent) => {
 let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
-  if (!is403.value) return
-
-  toast.add({
-    title: '沒有權限訪問此頁面',
-    description: '5 秒後為您導回首頁',
-    color: 'error',
-  })
-  forbiddenRedirectTimer = setTimeout(() => {
-    handleGoHome()
-  }, FORBIDDEN_REDIRECT_DELAY_MS)
+  if (is403.value) {
+    toast.add({
+      title: '沒有權限訪問此頁面',
+      description: '5 秒後為您導回首頁',
+      color: 'error',
+    })
+    forbiddenRedirectTimer = setTimeout(() => {
+      handleGoHome()
+    }, FORBIDDEN_REDIRECT_DELAY_MS)
+  }
 })
 
 onUnmounted(() => {
