@@ -8,8 +8,8 @@ const props = defineProps<{
 
 type Vector2 = { x: number; y: number }
 
-const is404 = computed(() => props.error?.status === 404)
 const is403 = computed(() => props.error?.status === 403)
+const is404 = computed(() => props.error?.status === 404)
 const handleGoHome = () => clearError({ redirect: '/' })
 const toast = useToast()
 const { width, height } = useWindowSize()
