@@ -8,10 +8,17 @@ const props = defineProps<{
 
 type Vector2 = { x: number; y: number }
 
+const is403 = computed(() => props.error?.status === 403)
 const is404 = computed(() => props.error?.status === 404)
 const handleGoHome = () => clearError({ redirect: '/' })
-
+const toast = useToast()
 const { width, height } = useWindowSize()
+
+// 403 forbidden page constants
+
+const FORBIDDEN_REDIRECT_DELAY_MS = 5000
+
+// 404 page cat animation constants
 
 const catSize = computed(() => (width.value <= 640 ? 90 : 140))
 // Speeds below are tuned per animation frame at TARGET_FPS.
@@ -198,13 +205,29 @@ const handleTouchStart = (e: TouchEvent) => {
   registerTouchDragListeners()
 }
 
+let forbiddenRedirectTimer: ReturnType<typeof setTimeout> | null = null
+
+onMounted(() => {
+  if (is403.value) {
+    toast.add({
+      title: '沒有權限訪問此頁面',
+      description: '5 秒後為您導回首頁',
+      color: 'error',
+    })
+    forbiddenRedirectTimer = setTimeout(() => {
+      handleGoHome()
+    }, FORBIDDEN_REDIRECT_DELAY_MS)
+  }
+})
+
 onUnmounted(() => {
   clearDragListeners()
+  if (forbiddenRedirectTimer) clearTimeout(forbiddenRedirectTimer)
 })
 </script>
 
 <template>
-  <UApp>
+  <UApp :toaster="{ position: 'top-center' }">
     <div class="relative h-screen w-screen overflow-hidden">
       <img src="~/assets/image/404_bg.webp" alt="404 background" class="absolute inset-0 h-full w-full object-cover" />
       <div class="relative z-10 flex h-full w-full items-center justify-center px-6">
@@ -218,6 +241,15 @@ onUnmounted(() => {
                 您要找的頁面可能已經被移除或暫時無法使用。
               </p>
               <UButton size="xl" color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
+            </div>
+          </template>
+          <template v-else-if="is403">
+            <h1 class="text-highlighted mb-4 text-center text-[3.375rem] font-bold max-sm:text-4xl">403 禁止訪問</h1>
+            <div class="flex flex-col items-center justify-center gap-6 max-sm:gap-3">
+              <p class="text-muted text-center text-base leading-relaxed max-sm:text-sm">
+                您沒有權限訪問此頁面，即將為您導回首頁。
+              </p>
+              <UButton color="primary" class="cursor-pointer" @click="handleGoHome"> 返回首頁 </UButton>
             </div>
           </template>
           <template v-else>
