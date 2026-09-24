@@ -2,12 +2,12 @@
 import type { ButtonProps } from '@nuxt/ui'
 
 const ctaLinks = ref<ButtonProps[]>([
-  { label: '看文章', color: 'neutral', variant: 'subtle', trailingIcon: 'i-lucide-arrow-right' },
+  { label: '看文章', to: '/articles', color: 'neutral', variant: 'subtle', trailingIcon: 'i-lucide-arrow-right' },
 ])
 </script>
 
 <template>
-  <UPage>
+  <UPage class="flex flex-1">
     <UPageCTA
       title="夢想起飛的學習基地"
       description="知識起航，未來翱翔"
@@ -15,7 +15,7 @@ const ctaLinks = ref<ButtonProps[]>([
       orientation="horizontal"
       reverse
       :links="ctaLinks"
-      class="justify-center"
+      class="justify-center bg-slate-50"
       :ui="{
         container: 'lg:grid-cols-3',
         wrapper: 'lg:col-span-2',
