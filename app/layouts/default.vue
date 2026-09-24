@@ -48,7 +48,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => [
       </template>
     </UHeader>
 
-    <UMain class="min-h-0 flex-1">
+    <UMain class="flex min-h-0 flex-1 flex-col">
       <slot />
     </UMain>
 
