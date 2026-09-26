@@ -15,9 +15,15 @@ export default defineNuxtConfig({
       include: ['zod', 'zod/locales'],
     },
   },
-  modules: ['@nuxt/eslint', '@nuxt/ui'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@comark/nuxt', '@nuxt/content'],
   icon: {
     serverBundle: 'remote',
+  },
+  ui: {
+    prose: true,
+  },
+  content: {
+    experimental: { sqliteConnector: 'native' },
   },
   runtimeConfig: {
     public: {
