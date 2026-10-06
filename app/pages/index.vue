@@ -15,7 +15,7 @@ const ctaLinks = ref<ButtonProps[]>([
       orientation="horizontal"
       reverse
       :links="ctaLinks"
-      class="justify-center bg-slate-50"
+      class="justify-center"
       :ui="{
         container: 'lg:grid-cols-3',
         wrapper: 'lg:col-span-2',
