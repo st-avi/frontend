@@ -2,14 +2,28 @@
 import type { ApiResp } from '~~/types/api/common.ts'
 import type { Article } from '~~/types/api/article.ts'
 import { parseMarkdown } from '@comark/nuxt/parse'
-import shiki from '@comark/nuxt/plugins/shiki'
+import shiki from '@comark/nuxt/plugins/shiki/core'
+import githubLight from '@shikijs/themes/github-light'
+import githubDark from '@shikijs/themes/github-dark'
+import bash from '@shikijs/langs/bash'
+import c from '@shikijs/langs/c'
+import cpp from '@shikijs/langs/cpp'
+import go from '@shikijs/langs/go'
+import python from '@shikijs/langs/python'
 import emoji from '@comark/nuxt/plugins/emoji'
 import math, { Math } from '@comark/nuxt/plugins/math'
 import toc from '@comark/nuxt/plugins/toc'
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const plugins = [shiki(), emoji(), math()]
+const plugins = [
+  shiki({
+    languages: [bash, c, cpp, go, python],
+    themes: { light: githubLight, dark: githubDark },
+  }),
+  emoji(),
+  math(),
+]
 const components = { math: Math }
 
 const { data: articleResp, error: articleError } = await useFetch<ApiResp<Article>>(
@@ -60,7 +74,9 @@ const publishedAt = computed(() => {
           </div>
           <USeparator />
         </div>
-        <Markdown :value="article.content" :plugins="plugins" :components="components" />
+        <div class="article-content">
+          <Markdown :value="article.content" :plugins="plugins" :components="components" />
+        </div>
       </div>
 
       <div class="w-1/7">
@@ -75,3 +91,26 @@ const publishedAt = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.article-content :deep(pre.shiki code) {
+  counter-reset: line;
+}
+
+.article-content :deep(pre.shiki code .line::before) {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 1.5rem;
+  padding-right: 0.75rem;
+  margin-right: 0.75rem;
+  border-right: 1px solid var(--ui-text-dimmed);
+  text-align: right;
+  color: var(--ui-text-dimmed);
+  user-select: none;
+}
+
+:global(.dark .article-content pre.shiki span) {
+  color: var(--shiki-dark, inherit) !important;
+}
+</style>

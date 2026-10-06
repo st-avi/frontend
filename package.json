@@ -21,6 +21,8 @@
     "@nuxt/content": "^3.16.1",
     "@nuxt/eslint": "1.17.0",
     "@nuxt/ui": "^4.11.2",
+    "@shikijs/langs": "^4.5.0",
+    "@shikijs/themes": "^4.5.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vueuse/core": "^15.0.0",
     "eslint": "^10.11.0",
