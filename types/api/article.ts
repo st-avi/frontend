@@ -7,6 +7,16 @@ export type Articles = {
   }[]
 }
 
+export type LatestArticles = {
+  list: {
+    category: string
+    title: string
+    slug: string
+    summary: string
+    cover_image: string
+  }[]
+}
+
 export type Tags = {
   tags: {
     name: string
