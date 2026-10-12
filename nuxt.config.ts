@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: {
     host: 'local.stavi.tw',
-    https: true,
+    https: {
+      key: `${process.env.HOME}/.certs/local.stavi.tw-key.pem`,
+      cert: `${process.env.HOME}/.certs/local.stavi.tw.pem`,
+    },
   },
   typescript: { typeCheck: true },
   css: ['~/assets/css/main.css'],
