@@ -72,9 +72,13 @@ const navigateToArticle = (slug: string) => navigateTo(`/articles/${slug}`)
           >
             <div class="flex flex-col items-start justify-between gap-4">
               <NuxtLink :to="`/categories/${article.category_slug}`" class="inline-flex" @click.stop>
-                <UBadge color="primary" class="px-3 py-1 text-sm">
-                  {{ article.category }}
-                </UBadge>
+                <UBadge
+                  color="primary"
+                  variant="soft"
+                  icon="i-lucide-folder"
+                  :label="article.category"
+                  class="rounded-full px-3 py-1 text-sm font-medium"
+                />
               </NuxtLink>
               <div class="space-y-1">
                 <div class="text-xl font-semibold">
