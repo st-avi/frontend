@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: {
     host: 'local.stavi.tw',
-    https: true,
+    https: {
+      key: `${process.env.HOME}/.certs/local.stavi.tw-key.pem`,
+      cert: `${process.env.HOME}/.certs/local.stavi.tw.pem`,
+    },
   },
   typescript: { typeCheck: true },
   css: ['~/assets/css/main.css'],
@@ -15,9 +18,15 @@ export default defineNuxtConfig({
       include: ['zod', 'zod/locales'],
     },
   },
-  modules: ['@nuxt/eslint', '@nuxt/ui'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@comark/nuxt', '@nuxt/content'],
   icon: {
     serverBundle: 'remote',
+  },
+  ui: {
+    prose: true,
+  },
+  content: {
+    experimental: { sqliteConnector: 'native' },
   },
   runtimeConfig: {
     public: {

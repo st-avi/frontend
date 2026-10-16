@@ -5,8 +5,8 @@ allowBuilds:
   vue-demi: true
 
 minimumReleaseAgeExclude:
-  - '@nuxt/ui@4.8.1'
+  - '@nuxt/ui@4.11.1'
   - '@pkgr/core@0.3.6'
   - eslint-plugin-prettier@5.5.6
   - synckit@0.11.13
-  - vue-router@5.1.0
+  - vue-router@5.3.1
