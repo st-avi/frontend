@@ -18,7 +18,7 @@ const handleLogout = async () => {
   } catch {
     toast.add({
       title: '登出時發生錯誤',
-      description: '已在本機清除登入狀態',
+      description: '請確認網路連線狀態或重新整理頁面，以確保成功登出',
       color: 'warning',
     })
   }
