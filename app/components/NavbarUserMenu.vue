@@ -52,7 +52,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
     :ui="{ content: 'w-56' }"
   >
     <UButton class="cursor-pointer" color="neutral" variant="ghost" size="xl" square aria-label="使用者選單">
-      <UAvatar icon="i-lucide-user" size="sm" />
+      <UAvatar :src="user.avatar || undefined" :alt="user.username" icon="i-lucide-user" size="sm" />
     </UButton>
   </UDropdownMenu>
 </template>
