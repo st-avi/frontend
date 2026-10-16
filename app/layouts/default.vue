@@ -34,6 +34,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => [
           aria-label="GitHub"
           size="xl"
         />
+        <NavbarUserMenu />
       </template>
 
       <template #body>
