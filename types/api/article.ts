@@ -24,6 +24,13 @@ export type Tags = {
   }[]
 }
 
+export type Categories = {
+  categories: {
+    name: string
+    slug: string
+  }[]
+}
+
 export type Article = {
   title: string
   summary: string
