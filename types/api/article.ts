@@ -43,3 +43,13 @@ export type Article = {
     slug: string
   }[]
 }
+
+export type CategoryArticles = {
+  list: {
+    title: string
+    slug: string
+    summary: string
+  }[]
+}
+
+export type TagArticles = CategoryArticles

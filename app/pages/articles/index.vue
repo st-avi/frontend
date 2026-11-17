@@ -45,8 +45,6 @@ const updateCanScrollDown = () => {
 
 onMounted(updateCanScrollDown)
 watch(categoryList, () => nextTick(updateCanScrollDown))
-
-const navigateToArticle = (slug: string) => navigateTo(`/articles/${slug}`)
 </script>
 
 <template>
@@ -79,30 +77,14 @@ const navigateToArticle = (slug: string) => navigateTo(`/articles/${slug}`)
         }"
       >
         <div class="space-y-4">
-          <UCard
+          <ArticleCard
             v-for="article in articleList"
             :key="article.slug"
-            variant="subtle"
-            class="cursor-pointer"
-            @click="navigateToArticle(article.slug)"
-          >
-            <div class="flex flex-col items-start justify-between gap-4">
-              <NuxtLink :to="`/categories/${article.category_slug}`" class="inline-flex" @click.stop>
-                <UBadge
-                  color="primary"
-                  variant="soft"
-                  icon="i-lucide-folder"
-                  :label="article.category"
-                  class="rounded-full px-3 py-1 text-sm font-medium"
-                />
-              </NuxtLink>
-              <div class="space-y-1">
-                <div class="text-xl font-semibold">
-                  {{ article.title }}
-                </div>
-              </div>
-            </div>
-          </UCard>
+            :to="`/articles/${article.slug}`"
+            :title="article.title"
+            :category="article.category"
+            :category-slug="article.category_slug"
+          />
         </div>
 
         <template #right>
