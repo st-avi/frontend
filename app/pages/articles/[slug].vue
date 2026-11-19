@@ -63,7 +63,7 @@ const publishedAt = computed(() => {
     <div class="flex w-full max-w-6xl gap-8">
       <div class="w-6/7 rounded-lg border border-slate-300 p-4">
         <div class="space-y-6">
-          <div class="aspect-video w-full overflow-hidden rounded-lg">
+          <div v-if="article.cover_image" class="aspect-video w-full overflow-hidden rounded-lg">
             <img :src="article.cover_image" alt="Article Cover Image" class="h-full w-full object-cover" />
           </div>
           <div class="text-highlighted text-4xl font-bold">{{ article.title }}</div>
